@@ -1,5 +1,5 @@
 import { Inngest } from "inngest";
-import  prisma  from "../configs/prisma.js";
+import prisma from "../configs/prisma.js";
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "project-management" });
 
@@ -65,5 +65,95 @@ const syncUserUpdation = inngest.createFunction(
   }
 );
 
+//Inngest functions to store workspace data
+const syncWorkspaceCreation = inngest.createFunction(
+  {
+    id: "sync-workspace-from-clerk",
+  },
+  {
+    event: "clerk/workspace.created",
+  },
+  async ({ event }) => {
+    const { data } = event;
+    await prisma.workspace.create({
+      data: {
+        id: data?.id,
+        name: data?.name,
+        slug: data?.slug,
+        description: data?.description,
+        image: data?.image_url,
+        ownerId: data?.created_by,
+      },
+    });
+    // Assign the workspace creator as an admin member
+    await prisma.workspaceMember.create({
+      data: {
+        userId: data?.created_by,
+        workspaceId: data?.id,
+        role: "ADMIN",
+      },
+    });
+  }
+);
+
+//Inngest functions to update workspace data
+const syncWorkspaceUpdation = inngest.createFunction(
+  {
+    id: "update-workspace-with-clerk",
+  },
+  { event: "clerk/workspace.updated" },
+  async ({ event }) => {
+    const { data } = event;
+    await prisma.workspace.update({
+      where: {
+        id: data?.id,
+      },
+      data: {
+        name: data?.name,
+        slug: data?.slug,
+        description: data?.description,
+        image: data?.image_url,
+      },
+    });
+  }
+);
+
+//Inngest functions to delete workspace data
+const syncWorkspaceDeletion = inngest.createFunction(
+  {
+    id: "delete-workspace-with-clerk",
+  },
+  {
+    event: "clerk/workspace.deleted",
+  },
+  async ({ event }) => {
+    const { data } = event;
+    await prisma.workspace.delete({
+      where: {
+        id: data?.id,
+      },
+    });
+  }
+);
+
+//Inngest function to update workspace members
+const syncWorkspaceMemberCreation = inngest.createFunction(
+  {
+    id: "update-workspace-member-with-clerk",
+  },
+  {
+    event: "clerk/organizationInvitation.accepted",
+  },
+  async ({ event }) => {
+    const { data } = event;
+    await prisma.workspaceMember.create({
+      data: {
+        userId: data?.user_id,
+        workspaceId: data?.organization_id,
+        message: data?.message,
+        role:String(data?.role_name).toUpperCase(),
+      }
+  });
+})
 // Create an empty array where we'll export future Inngest functions
-export const functions = [syncUserCreation,syncUserDeletion,syncUserUpdation];
+export const functions = [syncUserCreation, syncUserDeletion, syncUserUpdation,syncWorkspaceCreation,syncWorkspaceUpdation,syncWorkspaceDeletion,syncWorkspaceMemberCreation];
