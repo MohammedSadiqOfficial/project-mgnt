@@ -71,7 +71,7 @@ const syncWorkspaceCreation = inngest.createFunction(
     id: "sync-workspace-from-clerk",
   },
   {
-    event: "clerk/workspace.created",
+    event: "clerk/organization.created",
   },
   async ({ event }) => {
     const { data } = event;
@@ -101,7 +101,7 @@ const syncWorkspaceUpdation = inngest.createFunction(
   {
     id: "update-workspace-from-clerk",
   },
-  { event: "clerk/workspace.updated" },
+  { event: "clerk/organization.updated" },
   async ({ event }) => {
     const { data } = event;
     await prisma.workspace.update({
@@ -124,7 +124,7 @@ const syncWorkspaceDeletion = inngest.createFunction(
     id: "delete-workspace-with-clerk",
   },
   {
-    event: "clerk/workspace.deleted",
+    event: "clerk/organization.deleted",
   },
   async ({ event }) => {
     const { data } = event;
@@ -151,9 +151,18 @@ const syncWorkspaceMemberCreation = inngest.createFunction(
         userId: data?.user_id,
         workspaceId: data?.organization_id,
         message: data?.message,
-        role:String(data?.role_name).toUpperCase(),
-      }
-  });
-})
+        role: String(data?.role_name).toUpperCase(),
+      },
+    });
+  }
+);
 // Create an empty array where we'll export future Inngest functions
-export const functions = [syncUserCreation, syncUserDeletion, syncUserUpdation,syncWorkspaceCreation,syncWorkspaceUpdation,syncWorkspaceDeletion,syncWorkspaceMemberCreation];
+export const functions = [
+  syncUserCreation,
+  syncUserDeletion,
+  syncUserUpdation,
+  syncWorkspaceCreation,
+  syncWorkspaceUpdation,
+  syncWorkspaceDeletion,
+  syncWorkspaceMemberCreation,
+];
