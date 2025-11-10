@@ -77,19 +77,19 @@ const syncWorkspaceCreation = inngest.createFunction(
     const { data } = event;
     await prisma.workspace.create({
       data: {
-        id: data?.id,
-        name: data?.name,
-        slug: data?.slug,
-        description: data?.description,
-        image: data?.image_url,
-        ownerId: data?.created_by,
+        id: data.id,
+        name: data.name,
+        slug: data.slug,
+        description: data.description,
+        image: data.image_url,
+        ownerId: data.created_by,
       },
     });
     // Assign the workspace creator as an admin member
     await prisma.workspaceMember.create({
       data: {
-        userId: data?.created_by,
-        workspaceId: data?.id,
+        userId: data.created_by,
+        workspaceId: data.id,
         role: "ADMIN",
       },
     });
@@ -99,7 +99,7 @@ const syncWorkspaceCreation = inngest.createFunction(
 //Inngest functions to update workspace data
 const syncWorkspaceUpdation = inngest.createFunction(
   {
-    id: "update-workspace-with-clerk",
+    id: "update-workspace-from-clerk",
   },
   { event: "clerk/workspace.updated" },
   async ({ event }) => {
