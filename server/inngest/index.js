@@ -80,8 +80,8 @@ const syncWorkspaceCreation = inngest.createFunction(
         id: data.id,
         name: data.name,
         slug: data.slug,
-        description: data.description,
-        image: data.image_url,
+        description: data?.description,
+        image_url: data.image_url,
         ownerId: data.created_by,
       },
     });
@@ -112,7 +112,7 @@ const syncWorkspaceUpdation = inngest.createFunction(
         name: data.name,
         slug: data.slug,
         description: data.description,
-        image: data.image_url,
+        image_url: data.image_url,
       },
     });
   }
