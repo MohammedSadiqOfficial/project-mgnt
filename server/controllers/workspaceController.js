@@ -31,15 +31,9 @@ export const getUserWorkspaces = async (req, res) => {
               },
             },
             members: {
-<<<<<<< HEAD
-            include:{
-                user: true,
-            }
-=======
               include:{
                 user: true,
               }
->>>>>>> d66731414b96439437fc9a8b9969d786b03e3a71
             },
           },
         },
