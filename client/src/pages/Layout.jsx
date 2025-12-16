@@ -26,11 +26,11 @@ const Layout = () => {
 
   //Initial load workspace
   useEffect(() => {
-     if (isLoaded && user && workspaces.length === 0)
-     {
-      console.log("Here i am")
-      dispatch(fetchWorkspaces(getToken));
-     }
+    if (isLoaded && user) {
+      if (workspaces.length === 0) {
+        dispatch(fetchWorkspaces({ getToken: getToken }));
+      }
+    }
   }, [user, isLoaded]);
 
   if (!user)
@@ -39,7 +39,6 @@ const Layout = () => {
         <SignIn />
       </div>
     );
-      console.log("Workspace:",workspaces)
   if (loading)
     return (
       <div className="flex items-center justify-center h-screen bg-white dark:bg-zinc-950">
@@ -47,7 +46,7 @@ const Layout = () => {
       </div>
     );
 
-    if (user && workspaces.length === 0)
+  if (user && workspaces.length === 0)
     return (
       <div className="min-h-screen flex items-center justify-center">
         <CreateOrganization />
