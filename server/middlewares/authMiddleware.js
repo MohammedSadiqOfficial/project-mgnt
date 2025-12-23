@@ -1,6 +1,8 @@
 export const protect = async (req, res, next) => {
   try {
-    const { userId } =  await req.auth();
+    const { userId } = await req.auth() ;
+    console.log("USER:",userId);
+    
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
     return next();
   } catch (error) {

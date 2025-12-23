@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { XIcon } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
+import api from "../config/api";
+import { useAuth } from "@clerk/clerk-react";
+import { addProject } from "../features/workspaceSlice";
 
 const CreateProjectDialog = ({ isDialogOpen, setIsDialogOpen }) => {
   const { currentWorkspace } = useSelector((state) => state.workspace);
-
+  const { getToken } = useAuth();
+  const dispatch = useDispatch();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -22,6 +27,28 @@ const CreateProjectDialog = ({ isDialogOpen, setIsDialogOpen }) => {
   const createForm = useRef(null);
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      if (!formData.team_lead) return toast.error("Please select a team lead");
+      const { data } = await api.post(
+        "/api/projects",
+        {
+          workspaceId: currentWorkspace.id,
+          ...formData,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${await getToken()}`,
+          },
+        }
+      );
+      dispatch(addProject(data.project));
+      setIsDialogOpen(false);
+    } catch (error) {
+      toast.error(error?.response?.data?.message || error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const removeTeamMember = (email) => {
@@ -154,7 +181,8 @@ const CreateProjectDialog = ({ isDialogOpen, setIsDialogOpen }) => {
                   formData.start_date &&
                   new Date(formData.start_date).toISOString().split("T")[0]
                 }
-                disabled={!formData.start_date}                className="w-full px-3 py-2 rounded dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 mt-1 text-zinc-900 dark:text-zinc-200 text-sm disabled:bg-zinc-100/20"
+                disabled={!formData.start_date}
+                className="w-full px-3 py-2 rounded dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 mt-1 text-zinc-900 dark:text-zinc-200 text-sm disabled:bg-zinc-100/20"
               />
             </div>
           </div>
@@ -218,10 +246,9 @@ const CreateProjectDialog = ({ isDialogOpen, setIsDialogOpen }) => {
                     key={email}
                     className="flex items-center gap-1 bg-blue-200/50 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 px-2 py-1 rounded-md text-sm"
                   >
-                    {
-                      formData.team_lead === email &&
+                    {formData.team_lead === email && (
                       <span className="h-2 w-2 mr-1 bg-purple-500 rounded-full"></span>
-                    }
+                    )}
                     {email}
                     <button
                       type="button"

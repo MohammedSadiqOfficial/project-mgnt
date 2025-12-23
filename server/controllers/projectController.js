@@ -65,8 +65,8 @@ export const createProject = async (req, res) => {
     // Add member to project if their workspace
     if (team_members.length > 0) {
       const memberToAdd = [];
-      team_members.forEach((member) => {
-        if (team_members.include(member.user.email))
+      workspace.members.forEach((member) => {
+        if (team_members.includes(member.user.email))
           memberToAdd.push(member.user.id);
       });
       await prisma.projectMember.createMany({
@@ -82,7 +82,9 @@ export const createProject = async (req, res) => {
       },
       include: {
         members: {
-          user: true,
+          include:{
+            user: true,
+          }
         },
         tasks: {
           include: {
@@ -112,6 +114,7 @@ export const updateProject = async (req, res) => {
   try {
     const { userId } = await req.auth();
     const {
+      id,
       workspaceId,
       description,
       name,
@@ -202,7 +205,7 @@ export const addMember = async (req, res) => {
 
     if (!project) return res.status(404).json({ message: "Project not found" });
 
-    if (team_lead !== userId)
+    if (project.team_lead !== userId)
       return res
         .status(401)
         .json({ message: "Only project lead can add member" });

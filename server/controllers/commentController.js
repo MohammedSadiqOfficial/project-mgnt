@@ -25,7 +25,7 @@ export const addComment = async (req, res) => {
       },
     });
 
-    if (project) return res.status(404).json({ message: "Project not found" });
+    if (!project) return res.status(404).json({ message: "Project not found" });
 
     const member = project.members.find((member) => member.userId === userId);
 
@@ -56,15 +56,16 @@ export const addComment = async (req, res) => {
 export const getTaskComments = async (req, res) => {
   try {
     const { taskId } = req.params;
-
+    console.log("TASKID:",taskId)
     const comments = await prisma.comment.findMany({
       where: {
-        id: taskId,
+        taskId,
       },
       include: {
         user: true,
       },
     });
+    console.log("ComMMENtS:",comments)
     res.json({comments})
   } catch (error) {
     console.log(error);

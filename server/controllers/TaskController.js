@@ -43,6 +43,7 @@ export const createTask = async (req, res) => {
       data: {
         title,
         description,
+        projectId,
         status,
         type,
         assigneeId,
@@ -79,6 +80,7 @@ export const createTask = async (req, res) => {
 // Update task
 export const updateTask = async (req, res) => {
   try {
+    const { userId } = await req.auth();
     const task = await prisma.task.findUnique({
       where: {
         id: req.params.id,

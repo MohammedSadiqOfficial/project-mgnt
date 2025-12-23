@@ -15,6 +15,8 @@ import {
   Zap,
 } from "lucide-react";
 import AlertForm from "./AlertForm";
+import { useAuth } from "@clerk/clerk-react";
+import api from "../config/api";
 
 const typeIcons = {
   BUG: { icon: Bug, color: "text-red-600 dark:text-red-400" },
@@ -46,7 +48,7 @@ const ProjectTasks = ({ tasks }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [selectedTasks, setSelectedTasks] = useState([]);
-
+  const { getToken } = useAuth();
   const [filters, setFilters] = useState({
     status: "",
     type: "",
@@ -81,9 +83,16 @@ const ProjectTasks = ({ tasks }) => {
   const handleStatusChange = async (taskId, newStatus) => {
     try {
       toast.loading("Updating status...");
-
-      //  Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const token = await getToken();
+      const { data } = await api.put(
+        `/api/tasks/${taskId}`,
+        { status: newStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       let updatedTask = structuredClone(tasks.find((t) => t.id === taskId));
       updatedTask.status = newStatus;
@@ -99,31 +108,34 @@ const ProjectTasks = ({ tasks }) => {
 
   const handleDelete = async () => {
     try {
-       
-         setAlertForm(false)
+      const token = await getToken();
+      setAlertForm(false);
       toast.loading("Deleting tasks...");
 
-      //  Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await api.delete("/api/tasks/delete", {
+        data: {
+          taskIds: selectedTasks,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       dispatch(deleteTask(selectedTasks));
 
       toast.dismissAll();
       toast.success("Tasks deleted successfully");
-    setSelectedTasks([])
-      
+      setSelectedTasks([]);
     } catch (error) {
       toast.dismissAll();
       toast.error(error?.response?.data?.message || error.message);
     }
-   
   };
 
   const handleAlert = () => {
     setAlertForm(true);
   };
   useEffect(() => {
-
     if (confirm) {
       handleDelete();
       setConfirm(false);
